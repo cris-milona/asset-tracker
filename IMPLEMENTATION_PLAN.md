@@ -95,11 +95,11 @@ Tests + README + polish — a small set of meaningful tests (bbox query correctn
 
 **Checklist**
 
-- [ ] PostgreSQL running locally, lat/lng initially seeded from seed.json
+- [x] PostgreSQL running locally, lat/lng initially seeded from seed.json
 - [ ] Express + TypeScript CRUD endpoints: list / get / create / update / delete
-- [ ] Zod validation for request data
-- [ ] Type and status filtering
-- [ ] Pagination for the list endpoint
+- [x] Zod validation for request data
+- [x] Type and status filtering
+- [x] Pagination for the list endpoint
 - [ ] React + TypeScript + MUI + Redux Toolkit
 - [ ] RTK Query wired to the API
 - [ ] List view with type/status filters
