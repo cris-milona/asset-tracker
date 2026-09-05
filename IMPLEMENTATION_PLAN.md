@@ -61,7 +61,7 @@ Applies from the first backend/frontend scaffolding step onward.
 Naming convention: snake_case in the Postgres schema, camelCase in the API responses and frontend — server-side conversion.
 Filtering: type and status both support multiple values per field (e.g. ?status=warning,critical), not just a single value.
 Bounding box: passed as one comma-separated query param, ?bbox=minLng,minLat,maxLng,maxLat.
-Pagination: defaults to 50 items per page; 50 is also the max allowed limit.
+Pagination: defaults to 10 items per page; 40 is the max allowed limit.
 List + map layout: shown side-by-side at once.
 Create/edit form: a modal/dialog over the view, not a separate page.
 Seed data: seed.json dataset is provided.
@@ -96,13 +96,13 @@ Tests + README + polish — a small set of meaningful tests (bbox query correctn
 **Checklist**
 
 - [x] PostgreSQL running locally, lat/lng initially seeded from seed.json
-- [ ] Express + TypeScript CRUD endpoints: list / get / create / update / delete
+- [x] Express + TypeScript CRUD endpoints: list / get / create / update / delete
 - [x] Zod validation for request data
 - [x] Type and status filtering
 - [x] Pagination for the list endpoint
-- [ ] React + TypeScript + MUI + Redux Toolkit
-- [ ] RTK Query wired to the API
-- [ ] List view with type/status filters
+- [x] React + TypeScript + MUI + Redux Toolkit
+- [x] RTK Query wired to the API
+- [x] List view with type/status filters
 - [ ] Map view with react-leaflet
 - [ ] Markers color-coded by status
 - [ ] Clicking a marker opens the asset detail view
