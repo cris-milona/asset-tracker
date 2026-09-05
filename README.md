@@ -1,57 +1,83 @@
 # Asset Tracker
 
-## Local PostgreSQL setup
+A small full-stack app for tracking physical assets (pipes, hydrants, sensors, valves) on a
+map: list + filter by type/status, view on an interactive map with a geospatial filter, and
+create/edit/delete assets with a click-to-place location picker.
 
-This project uses a local PostgreSQL installation. Docker is not required.
+- **Backend**: Node.js / Express / TypeScript, PostgreSQL (plain SQL), Zod validation
+- **Frontend**: React / TypeScript / MUI, Redux Toolkit + RTK Query, react-leaflet (Leaflet + OpenStreetMap)
 
-The application expects a database named `asset_tracker` and connects using the
-`DATABASE_URL` in `server/.env`:
+## Prerequisites
 
-```dotenv
-DATABASE_URL=postgres://localhost:5432/asset_tracker
-```
+- Node.js (version pinned in `.nvmrc`; `nvm use` if you have nvm)
+- A local PostgreSQL server running (no PostGIS, no Docker required — plain PostgreSQL is enough)
 
-Create the database if needed, then run the schema setup from `server/`:
+## Setup
 
-```bash
-createdb asset_tracker
-npm run db:setup
-```
+1. **Database**: create the database the app expects.
 
-The schema setup creates the `assets` table. The server seeds the table from
-`server/src/db/seed.json` when it starts. To seed manually:
+   ```bash
+   createdb asset_tracker
+   ```
 
-```bash
-npm run db:seed
-```
+2. **Environment files**: copy the example env files and adjust if your local Postgres connection details differ.
 
-## Run the server
+   ```bash
+   cp server/.env.example server/.env
+   cp client/.env.example client/.env
+   ```
 
-From the `server/` directory:
+3. **Install dependencies** for both apps.
 
-```bash
-npm install
-npm run dev
-```
+   ```bash
+   cd server && npm install
+   cd ../client && npm install
+   ```
 
-The API runs at `http://localhost:4000`.
+4. **Create the schema**, from `server/`.
 
-## Stop and restart locally
+   ```bash
+   npm run db:setup
+   ```
 
-Stop the Node server with `Ctrl+C`. Its shutdown handler closes the application
-connection pool. PostgreSQL remains available and the database data is retained.
+   This creates the `assets` table. Seed data (`server/src/db/seed.json`) is loaded
+   automatically every time the server starts — no separate seed step needed, though
+   `npm run db:seed` is available to reseed on demand.
 
-Because PostgreSQL is managed locally through Homebrew, it can also be stopped
-when you are finished working:
+## Running
 
-```bash
-brew services stop postgresql@16
-```
-
-Start it again before running the server:
+Run both apps in separate terminals.
 
 ```bash
-brew services start postgresql@16
+# terminal 1, from server/
+npm run dev        # API at http://localhost:4000
+
+# terminal 2, from client/
+npm run dev        # app at http://localhost:5173 (or the next free port)
 ```
 
-Stopping PostgreSQL does not delete the `asset_tracker` database.
+## Tests
+
+```bash
+cd server && npm test
+cd client && npm test
+```
+
+Backend tests mock the database pool (no test database needed) and cover the list/filter, query-building logic, error-handling middleware, and request validation.
+Frontend tests cover the pure logic behind the create/edit form and the list/map query-string building — not the UI libraries themselves (MUI, Leaflet, RTK Query), which are already tested upstream.
+
+## API overview
+
+All endpoints are under `/api/assets`.
+
+| Method | Path   | Description                         |
+| ------ | ------ | ----------------------------------- |
+| GET    | `/`    | List assets (paginated, filterable) |
+| GET    | `/:id` | Get a single asset                  |
+| POST   | `/`    | Create an asset                     |
+| PATCH  | `/:id` | Update an asset (partial)           |
+| DELETE | `/:id` | Delete an asset                     |
+
+## Out of scope
+
+Per the assignment brief: authentication/authorization, mobile responsiveness, deployment (local-run only), exhaustive test coverage, accessibility audits, and production observability beyond basic logs.
