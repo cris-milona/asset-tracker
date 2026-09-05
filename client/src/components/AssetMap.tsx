@@ -1,42 +1,56 @@
-import { useEffect, useRef } from 'react';
-import type { CircleMarker as LeafletCircleMarker } from 'leaflet';
-import { Box, Button, Stack, Typography } from '@mui/material';
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet';
+import { useEffect } from 'react';
+import { Alert, Box, Button, Stack, Typography } from '@mui/material';
+import { CircleMarker, MapContainer, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import type { Asset } from '../types';
 import { statusHexColor } from '../statusColor';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../mapDefaults';
+import { useAppDispatch } from '../store/hooks';
+import { mapBoundsChanged } from '../store/filtersSlice';
 
 export type AssetMapProps = {
   assets: Asset[];
-  selectedAssetId: string | null;
+  total: number;
   onEditAsset: (asset: Asset) => void;
   onDeleteAsset: (asset: Asset) => void;
 };
 
-const SELECTED_ZOOM = 14;
+// Reads the current rectangle of the map so the backend's WHERE clause only returns assets actually visible on the map.
+const BoundsReporter = () => {
+  const dispatch = useAppDispatch();
 
-type FlyToSelectedProps = {
-  asset: Asset | undefined;
-  markerRefs: React.RefObject<Map<string, LeafletCircleMarker>>;
-};
+  const reportBounds = (map: ReturnType<typeof useMap>) => {
+    //we get the visible area by leaflets
+    const bounds = map.getBounds();
+    dispatch(
+      mapBoundsChanged({
+        minLng: bounds.getWest(),
+        minLat: bounds.getSouth(),
+        maxLng: bounds.getEast(),
+        maxLat: bounds.getNorth(),
+      }),
+    );
+  };
 
-const FlyToSelected = ({ asset, markerRefs }: FlyToSelectedProps) => {
-  const map = useMap();
+  const map = useMapEvents({
+    //every time we move something it recalculates the rectangle
+    moveend: () => reportBounds(map),
+  });
 
   useEffect(() => {
-    if (!asset) return;
-    map.flyTo([asset.lat, asset.lng], SELECTED_ZOOM);
-    markerRefs.current.get(asset.id)?.openPopup();
-  }, [asset, map, markerRefs]);
+    reportBounds(map);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
 
   return null;
 };
 
-const AssetMap = ({ assets, selectedAssetId, onEditAsset, onDeleteAsset }: AssetMapProps) => {
-  const markerRefs = useRef<Map<string, LeafletCircleMarker>>(new Map());
-  const selectedAsset = assets.find((asset) => asset.id === selectedAssetId);
-
-  return (
+const AssetMap = ({ assets, total, onEditAsset, onDeleteAsset }: AssetMapProps) => (
+  <Box>
+    {assets.length < total && (
+      <Alert severity="warning" sx={{ mb: 1 }}>
+        Showing {assets.length} of {total} assets in this area — zoom in to see the rest.
+      </Alert>
+    )}
     <Box sx={{ height: 600, width: '100%', borderRadius: 1, overflow: 'hidden' }}>
       <MapContainer
         center={DEFAULT_MAP_CENTER}
@@ -47,13 +61,10 @@ const AssetMap = ({ assets, selectedAssetId, onEditAsset, onDeleteAsset }: Asset
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <BoundsReporter />
         {assets.map((asset) => (
           <CircleMarker
             key={asset.id}
-            ref={(instance) => {
-              if (instance) markerRefs.current.set(asset.id, instance);
-              else markerRefs.current.delete(asset.id);
-            }}
             center={[asset.lat, asset.lng]}
             radius={8}
             pathOptions={{ color: statusHexColor[asset.status] }}
@@ -81,10 +92,9 @@ const AssetMap = ({ assets, selectedAssetId, onEditAsset, onDeleteAsset }: Asset
             </Popup>
           </CircleMarker>
         ))}
-        <FlyToSelected asset={selectedAsset} markerRefs={markerRefs} />
       </MapContainer>
     </Box>
-  );
-};
+  </Box>
+);
 
 export default AssetMap;

@@ -24,3 +24,10 @@ export type AssetListResponse = {
   limit: number;
   total: number;
 };
+
+export type BoundingBox = {
+  minLng: number;
+  minLat: number;
+  maxLng: number;
+  maxLat: number;
+};

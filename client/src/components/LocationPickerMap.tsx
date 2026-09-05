@@ -12,15 +12,16 @@ type LocationPickerMapProps = {
   mode: LocationPickerMode;
   onChange: (value: LatLng) => void;
 };
-
+//Leaflet function for creating a marker icon
 const markerIcon = divIcon({
   className: '',
   html: '<div style="width:16px;height:16px;border-radius:50%;background:#1976d2;border:2px solid white;box-shadow:0 0 2px rgba(0,0,0,0.5);"></div>',
   iconSize: [16, 16],
   iconAnchor: [8, 8],
 });
-
+//a component whose entire job is to call useMapEvents (which only works when rendered as a child of MapContainer) and it exists purely to attach an event listener to the map. listens for something the user does to the map, and pushes that outward into your app's state:
 const ClickHandler = ({ mode, onChange }: Pick<LocationPickerMapProps, 'mode' | 'onChange'>) => {
+  //react-leaflet hook specifically for listening to map interactions (clicks, drags, zoom, etc.)
   useMapEvents({
     click: (event) => {
       if (mode !== 'create') return;
@@ -48,6 +49,8 @@ const LocationPickerMap = ({ value, mode, onChange }: LocationPickerMapProps) =>
         zoom={value ? 12 : DEFAULT_MAP_ZOOM}
         style={{ height: '100%', width: '100%' }}
       >
+        {/* //This is what actually renders the visible map imagery — pulling map tiles from
+        OpenStreetMap's servers. */}
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -69,18 +72,8 @@ const LocationPickerMap = ({ value, mode, onChange }: LocationPickerMapProps) =>
       </MapContainer>
     </Box>
     <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-      <TextField
-        label="Latitude"
-        value={value ? value.lat.toFixed(6) : ''}
-        fullWidth
-        disabled
-      />
-      <TextField
-        label="Longitude"
-        value={value ? value.lng.toFixed(6) : ''}
-        fullWidth
-        disabled
-      />
+      <TextField label="Latitude" value={value ? value.lat.toFixed(6) : ''} fullWidth disabled />
+      <TextField label="Longitude" value={value ? value.lng.toFixed(6) : ''} fullWidth disabled />
     </Stack>
   </Box>
 );

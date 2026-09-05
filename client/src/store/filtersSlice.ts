@@ -1,14 +1,16 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { AssetStatus, AssetType } from '../types';
+import type { AssetStatus, AssetType, BoundingBox } from '../types';
 
 export type FiltersState = {
   types: AssetType[];
   statuses: AssetStatus[];
+  mapBounds: BoundingBox | null;
 };
 
 const initialState: FiltersState = {
   types: [],
   statuses: [],
+  mapBounds: null,
 };
 // /Redux Toolkit's main tool for defining a slice of state, combines the old action, initial state and reducer of redux
 const filtersSlice = createSlice({
@@ -24,8 +26,11 @@ const filtersSlice = createSlice({
     statusesChanged(state, action: PayloadAction<AssetStatus[]>) {
       state.statuses = action.payload;
     },
+    mapBoundsChanged(state, action: PayloadAction<BoundingBox>) {
+      state.mapBounds = action.payload;
+    },
   },
 });
 //Redux Toolkit auto-generated object, containing the action creators matching your reducers functions
-export const { typesChanged, statusesChanged } = filtersSlice.actions;
+export const { typesChanged, statusesChanged, mapBoundsChanged } = filtersSlice.actions;
 export const filtersReducer = filtersSlice.reducer;

@@ -22,3 +22,10 @@ export type AssetPagination = {
   page: number;
   limit: number;
 };
+
+export type AssetBoundingBox = {
+  minLng: number;
+  minLat: number;
+  maxLng: number;
+  maxLat: number;
+};

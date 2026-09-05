@@ -32,10 +32,9 @@ export type AssetListProps = {
   onNewAsset: () => void;
   onEditAsset: (asset: Asset) => void;
   onDeleteAsset: (asset: Asset) => void;
-  onSelectAsset: (asset: Asset) => void;
 };
 
-const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset, onSelectAsset }: AssetListProps) => {
+const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset }: AssetListProps) => {
   const dispatch = useAppDispatch();
   const types = useAppSelector((state) => state.filters.types);
   //useSelector((state) => state.filters.types), React-Redux checks whether the result of that selector changed compared to the last render, to decide whether the component needs to re-render.
@@ -112,7 +111,7 @@ const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset, onSelectAsset }: As
           </TableHead>
           <TableBody>
             {data.data.map((asset) => (
-              <TableRow key={asset.id} hover onClick={() => onSelectAsset(asset)} sx={{ cursor: 'pointer' }}>
+              <TableRow key={asset.id} hover>
                 <TableCell>{asset.name}</TableCell>
                 <TableCell>{asset.type}</TableCell>
                 <TableCell>
@@ -120,23 +119,13 @@ const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset, onSelectAsset }: As
                 </TableCell>
                 <TableCell>{asset.installedAt}</TableCell>
                 <TableCell align="right">
-                  <IconButton
-                    aria-label="edit"
-                    size="small"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onEditAsset(asset);
-                    }}
-                  >
+                  <IconButton aria-label="edit" size="small" onClick={() => onEditAsset(asset)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
                   <IconButton
                     aria-label="delete"
                     size="small"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onDeleteAsset(asset);
-                    }}
+                    onClick={() => onDeleteAsset(asset)}
                   >
                     <DeleteIcon fontSize="small" />
                   </IconButton>

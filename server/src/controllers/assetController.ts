@@ -29,9 +29,21 @@ const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(40).default(10),
 });
 
+// ?bbox=minLng,minLat,maxLng,maxLat, matching the current map viewport.
+const bboxSchema = z
+  .string()
+  .transform((value) => value.split(',').map(Number))
+  .pipe(z.tuple([z.number(), z.number(), z.number(), z.number()]))
+  .transform(([minLng, minLat, maxLng, maxLat]) => ({ minLng, minLat, maxLng, maxLat }))
+  .refine(
+    (bbox) => bbox.minLng <= bbox.maxLng && bbox.minLat <= bbox.maxLat,
+    'bbox must be minLng,minLat,maxLng,maxLat with min <= max',
+  );
+
 const listQuerySchema = paginationSchema.extend({
   types: z.array(z.enum(assetTypes)).optional(),
   statuses: z.array(z.enum(assetStatuses)).optional(),
+  bbox: bboxSchema.optional(),
 });
 
 //turns a query parameter into an array of strings, or undefined if that parameter wasn't provided at all
@@ -58,6 +70,7 @@ export const listAssetsHandler: RequestHandler = asyncHandler(async (request, re
     limit: query.limit,
     types: query.types,
     statuses: query.statuses,
+    bbox: query.bbox,
   });
   response.json({
     data: result.assets,

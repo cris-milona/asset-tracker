@@ -1,5 +1,12 @@
 import { pool } from '../db/pool.js';
-import type { Asset, AssetInput, AssetPagination, AssetStatus, AssetType } from '../types.js';
+import type {
+  Asset,
+  AssetBoundingBox,
+  AssetInput,
+  AssetPagination,
+  AssetStatus,
+  AssetType,
+} from '../types.js';
 
 type AssetRow = {
   id: string;
@@ -34,9 +41,11 @@ export const listAssets = async ({
   limit,
   types,
   statuses,
+  bbox,
 }: AssetPagination & {
   types?: AssetType[];
   statuses?: AssetStatus[];
+  bbox?: AssetBoundingBox;
 }): Promise<{ assets: Asset[]; total: number }> => {
   const values: Array<number | string[]> = [];
   const conditions: string[] = [];
@@ -49,6 +58,17 @@ export const listAssets = async ({
   if (statuses?.length) {
     values.push(statuses);
     conditions.push(`status = ANY($${values.length}::text[])`);
+  }
+
+  if (bbox) {
+    values.push(bbox.minLng, bbox.maxLng, bbox.minLat, bbox.maxLat);
+    const [minLngParam, maxLngParam, minLatParam, maxLatParam] = [3, 2, 1, 0].map(
+      (offset) => `$${values.length - offset}`,
+    );
+    //search from the db the points that exist inside the rectangle
+    conditions.push(
+      `lng BETWEEN ${minLngParam} AND ${maxLngParam} AND lat BETWEEN ${minLatParam} AND ${maxLatParam}`,
+    );
   }
 
   const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';

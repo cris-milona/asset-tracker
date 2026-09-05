@@ -9,3 +9,6 @@ CREATE TABLE IF NOT EXISTS assets (
   last_inspected_at DATE,
   notes TEXT NOT NULL DEFAULT ''
 );
+
+-- Speeds up the bounding-box filter's `lng BETWEEN ... AND lat BETWEEN ...`.
+CREATE INDEX IF NOT EXISTS assets_lat_lng_idx ON assets (lat, lng);

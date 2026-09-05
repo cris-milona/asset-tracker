@@ -1,14 +1,22 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { Asset, AssetInput, AssetListResponse, AssetStatus, AssetType } from '../types';
+import type {
+  Asset,
+  AssetInput,
+  AssetListResponse,
+  AssetStatus,
+  AssetType,
+  BoundingBox,
+} from '../types';
 
 export type ListAssetsParams = {
   page: number;
   limit: number;
   types: AssetType[];
   statuses: AssetStatus[];
+  bbox?: BoundingBox | null;
 };
 
-const buildListQuery = ({ page, limit, types, statuses }: ListAssetsParams): string => {
+const buildListQuery = ({ page, limit, types, statuses, bbox }: ListAssetsParams): string => {
   //URLSearchParams is a built-in browser/Node API specifically for building query strings correctly (handling things like encoding special characters) rather than manually concatenating strings like `page=${page}&limit=${limit}` yourself.
   const params = new URLSearchParams({
     page: String(page),
@@ -16,6 +24,9 @@ const buildListQuery = ({ page, limit, types, statuses }: ListAssetsParams): str
   });
   if (types.length) params.set('type', types.join(','));
   if (statuses.length) params.set('status', statuses.join(','));
+  if (bbox) {
+    params.set('bbox', [bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat].join(','));
+  }
   return params.toString();
 };
 //the RTK Query definition tying directly into your backend's actual endpoints and response shapes.

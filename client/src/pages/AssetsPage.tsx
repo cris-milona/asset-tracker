@@ -8,23 +8,24 @@ import { useAppSelector } from '../store/hooks';
 import { useListAssetsQuery } from '../store/assetsApi';
 import type { Asset } from '../types';
 
-// The backend has no bounding-box filter yet (that's a later phase), so the map can only
-// show up to the API's max page size — not necessarily every asset matching the filters.
+// The API's max page size — a safety cap for how many markers render at once, not a
+// real-world limit: the bbox filter already restricts results to the current viewport.
 const MAP_ASSET_LIMIT = 40;
 
 const AssetsPage = () => {
   const types = useAppSelector((state) => state.filters.types);
   const statuses = useAppSelector((state) => state.filters.statuses);
+  const mapBounds = useAppSelector((state) => state.filters.mapBounds);
   const [formAsset, setFormAsset] = useState<Asset | undefined>(undefined);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
-  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
 
   const { data: mapData } = useListAssetsQuery({
     page: 1,
     limit: MAP_ASSET_LIMIT,
     types,
     statuses,
+    bbox: mapBounds,
   });
 
   const openCreateForm = () => {
@@ -48,13 +49,12 @@ const AssetsPage = () => {
             onNewAsset={openCreateForm}
             onEditAsset={openEditForm}
             onDeleteAsset={setDeleteTarget}
-            onSelectAsset={(asset) => setSelectedAssetId(asset.id)}
           />
         </Stack>
         <Stack sx={{ flex: 1, minWidth: 0 }}>
           <AssetMap
             assets={mapData?.data ?? []}
-            selectedAssetId={selectedAssetId}
+            total={mapData?.total ?? 0}
             onEditAsset={openEditForm}
             onDeleteAsset={setDeleteTarget}
           />
