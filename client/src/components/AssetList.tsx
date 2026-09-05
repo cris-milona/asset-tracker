@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { ActionCreatorWithPayload } from '@reduxjs/toolkit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {
@@ -6,9 +7,7 @@ import {
   Button,
   Chip,
   CircularProgress,
-  Divider,
   IconButton,
-  ListItemText,
   MenuItem,
   Pagination,
   Select,
@@ -26,6 +25,7 @@ import { useListAssetsQuery } from '../store/assetsApi';
 import { assetStatuses, assetTypes, type Asset, type AssetStatus, type AssetType } from '../types';
 import AssetFormDialog from './AssetFormDialog';
 import DeleteAssetDialog from './DeleteAssetDialog';
+import MultiSelectFilter, { CLEAR_SELECTION } from './MultiSelectFilter';
 
 const statusColor: Record<AssetStatus, 'success' | 'warning' | 'error'> = {
   ok: 'success',
@@ -33,7 +33,6 @@ const statusColor: Record<AssetStatus, 'success' | 'warning' | 'error'> = {
   critical: 'error',
 };
 
-const CLEAR_SELECTION = '__clear__';
 const PAGE_SIZE_OPTIONS = [10, 20, 40] as const;
 
 const AssetList = () => {
@@ -59,21 +58,21 @@ const AssetList = () => {
     setPage(1);
   };
 
-  const handleTypesChange = (event: SelectChangeEvent<string[]>) => {
+  const handleFilterChange = <T extends string>(
+    event: SelectChangeEvent<string[]>,
+    actionCreator: ActionCreatorWithPayload<T[]>,
+  ) => {
     const value = event.target.value;
     const selected = typeof value === 'string' ? value.split(',') : value;
-    dispatch(typesChanged(selected.includes(CLEAR_SELECTION) ? [] : (selected as AssetType[])));
+    dispatch(actionCreator(selected.includes(CLEAR_SELECTION) ? [] : (selected as T[])));
     setPage(1);
   };
 
-  const handleStatusesChange = (event: SelectChangeEvent<string[]>) => {
-    const value = event.target.value;
-    const selected = typeof value === 'string' ? value.split(',') : value;
-    dispatch(
-      statusesChanged(selected.includes(CLEAR_SELECTION) ? [] : (selected as AssetStatus[])),
-    );
-    setPage(1);
-  };
+  const handleTypesChange = (event: SelectChangeEvent<string[]>) =>
+    handleFilterChange<AssetType>(event, typesChanged);
+
+  const handleStatusesChange = (event: SelectChangeEvent<string[]>) =>
+    handleFilterChange<AssetStatus>(event, statusesChanged);
 
   const pageCount = data ? Math.max(1, Math.ceil(data.total / limit)) : 1;
 
@@ -91,56 +90,18 @@ const AssetList = () => {
     <Stack spacing={2}>
       <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start">
         <Stack direction="row" spacing={2}>
-          <Select
-            multiple
-            displayEmpty
+          <MultiSelectFilter
             value={types}
+            options={assetTypes}
+            placeholder="All types"
             onChange={handleTypesChange}
-            renderValue={(selected) => (selected.length ? selected.join(', ') : 'All types')}
-            sx={{
-              width: 220,
-              '& .MuiSelect-select': {
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              },
-            }}
-          >
-            <MenuItem value={CLEAR_SELECTION} disabled={types.length === 0}>
-              <ListItemText primary="Clear all" />
-            </MenuItem>
-            <Divider />
-            {assetTypes.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-          <Select
-            multiple
-            displayEmpty
+          />
+          <MultiSelectFilter
             value={statuses}
+            options={assetStatuses}
+            placeholder="All statuses"
             onChange={handleStatusesChange}
-            renderValue={(selected) => (selected.length ? selected.join(', ') : 'All statuses')}
-            sx={{
-              width: 220,
-              '& .MuiSelect-select': {
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              },
-            }}
-          >
-            <MenuItem value={CLEAR_SELECTION} disabled={statuses.length === 0}>
-              <ListItemText primary="Clear all" />
-            </MenuItem>
-            <Divider />
-            {assetStatuses.map((status) => (
-              <MenuItem key={status} value={status}>
-                {status}
-              </MenuItem>
-            ))}
-          </Select>
+          />
         </Stack>
         <Button variant="contained" onClick={openCreateForm}>
           New asset

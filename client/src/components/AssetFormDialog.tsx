@@ -13,6 +13,7 @@ import {
 import { useCreateAssetMutation, useUpdateAssetMutation } from '../store/assetsApi';
 import { assetInputSchema, type AssetFormFieldErrors } from '../schemas/assetSchema';
 import { assetStatuses, assetTypes, type Asset, type AssetInput } from '../types';
+import ValidatedTextField from './ValidatedTextField';
 
 type FormValues = {
   name: string;
@@ -117,14 +118,14 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           {error && <Alert severity="error">Failed to save asset.</Alert>}
-          <TextField
+          <ValidatedTextField
             label="Name"
             value={values.name}
             onChange={handleChange('name')}
             required
             fullWidth
-            error={hasAttemptedSubmit && Boolean(fieldErrors.name)}
-            helperText={hasAttemptedSubmit ? fieldErrors.name : undefined}
+            fieldError={fieldErrors.name}
+            hasAttemptedSubmit={hasAttemptedSubmit}
           />
           <Stack direction="row" spacing={2}>
             <TextField
@@ -155,49 +156,49 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
             </TextField>
           </Stack>
           <Stack direction="row" spacing={2}>
-            <TextField
+            <ValidatedTextField
               label="Latitude"
               type="number"
               value={values.lat}
               onChange={handleChange('lat')}
               required
               fullWidth
-              error={hasAttemptedSubmit && Boolean(fieldErrors.lat)}
-              helperText={hasAttemptedSubmit ? fieldErrors.lat : undefined}
+              fieldError={fieldErrors.lat}
+              hasAttemptedSubmit={hasAttemptedSubmit}
               slotProps={{ htmlInput: { min: -90, max: 90, step: 'any' } }}
             />
-            <TextField
+            <ValidatedTextField
               label="Longitude"
               type="number"
               value={values.lng}
               onChange={handleChange('lng')}
               required
               fullWidth
-              error={hasAttemptedSubmit && Boolean(fieldErrors.lng)}
-              helperText={hasAttemptedSubmit ? fieldErrors.lng : undefined}
+              fieldError={fieldErrors.lng}
+              hasAttemptedSubmit={hasAttemptedSubmit}
               slotProps={{ htmlInput: { min: -180, max: 180, step: 'any' } }}
             />
           </Stack>
           <Stack direction="row" spacing={2}>
-            <TextField
+            <ValidatedTextField
               label="Installed at"
               type="date"
               value={values.installedAt}
               onChange={handleChange('installedAt')}
               required
               fullWidth
-              error={hasAttemptedSubmit && Boolean(fieldErrors.installedAt)}
-              helperText={hasAttemptedSubmit ? fieldErrors.installedAt : undefined}
+              fieldError={fieldErrors.installedAt}
+              hasAttemptedSubmit={hasAttemptedSubmit}
               slotProps={{ inputLabel: { shrink: true } }}
             />
-            <TextField
+            <ValidatedTextField
               label="Last inspected at"
               type="date"
               value={values.lastInspectedAt}
               onChange={handleChange('lastInspectedAt')}
               fullWidth
-              error={hasAttemptedSubmit && Boolean(fieldErrors.lastInspectedAt)}
-              helperText={hasAttemptedSubmit ? fieldErrors.lastInspectedAt : undefined}
+              fieldError={fieldErrors.lastInspectedAt}
+              hasAttemptedSubmit={hasAttemptedSubmit}
               slotProps={{ inputLabel: { shrink: true } }}
             />
           </Stack>
