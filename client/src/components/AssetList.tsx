@@ -23,28 +23,25 @@ import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { statusesChanged, typesChanged } from '../store/filtersSlice';
 import { useListAssetsQuery } from '../store/assetsApi';
 import { assetStatuses, assetTypes, type Asset, type AssetStatus, type AssetType } from '../types';
-import AssetFormDialog from './AssetFormDialog';
-import DeleteAssetDialog from './DeleteAssetDialog';
 import MultiSelectFilter, { CLEAR_SELECTION } from './MultiSelectFilter';
-
-const statusColor: Record<AssetStatus, 'success' | 'warning' | 'error'> = {
-  ok: 'success',
-  warning: 'warning',
-  critical: 'error',
-};
+import { statusColor } from '../statusColor';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 40] as const;
 
-const AssetList = () => {
+export type AssetListProps = {
+  onNewAsset: () => void;
+  onEditAsset: (asset: Asset) => void;
+  onDeleteAsset: (asset: Asset) => void;
+  onSelectAsset: (asset: Asset) => void;
+};
+
+const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset, onSelectAsset }: AssetListProps) => {
   const dispatch = useAppDispatch();
   const types = useAppSelector((state) => state.filters.types);
   //useSelector((state) => state.filters.types), React-Redux checks whether the result of that selector changed compared to the last render, to decide whether the component needs to re-render.
   const statuses = useAppSelector((state) => state.filters.statuses);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState<number>(PAGE_SIZE_OPTIONS[0]);
-  const [formAsset, setFormAsset] = useState<Asset | undefined>(undefined);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
 
   const { data, isLoading, isError } = useListAssetsQuery({
     page,
@@ -76,16 +73,6 @@ const AssetList = () => {
 
   const pageCount = data ? Math.max(1, Math.ceil(data.total / limit)) : 1;
 
-  const openCreateForm = () => {
-    setFormAsset(undefined);
-    setIsFormOpen(true);
-  };
-
-  const openEditForm = (asset: Asset) => {
-    setFormAsset(asset);
-    setIsFormOpen(true);
-  };
-
   return (
     <Stack spacing={2}>
       <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="flex-start">
@@ -103,7 +90,7 @@ const AssetList = () => {
             onChange={handleStatusesChange}
           />
         </Stack>
-        <Button variant="contained" onClick={openCreateForm}>
+        <Button variant="contained" onClick={onNewAsset}>
           New asset
         </Button>
       </Stack>
@@ -125,7 +112,7 @@ const AssetList = () => {
           </TableHead>
           <TableBody>
             {data.data.map((asset) => (
-              <TableRow key={asset.id} hover>
+              <TableRow key={asset.id} hover onClick={() => onSelectAsset(asset)} sx={{ cursor: 'pointer' }}>
                 <TableCell>{asset.name}</TableCell>
                 <TableCell>{asset.type}</TableCell>
                 <TableCell>
@@ -133,13 +120,23 @@ const AssetList = () => {
                 </TableCell>
                 <TableCell>{asset.installedAt}</TableCell>
                 <TableCell align="right">
-                  <IconButton aria-label="edit" size="small" onClick={() => openEditForm(asset)}>
+                  <IconButton
+                    aria-label="edit"
+                    size="small"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onEditAsset(asset);
+                    }}
+                  >
                     <EditIcon fontSize="small" />
                   </IconButton>
                   <IconButton
                     aria-label="delete"
                     size="small"
-                    onClick={() => setDeleteTarget(asset)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onDeleteAsset(asset);
+                    }}
                   >
                     <DeleteIcon fontSize="small" />
                   </IconButton>
@@ -167,9 +164,6 @@ const AssetList = () => {
           </Select>
         </Stack>
       )}
-
-      <AssetFormDialog open={isFormOpen} asset={formAsset} onClose={() => setIsFormOpen(false)} />
-      <DeleteAssetDialog asset={deleteTarget} onClose={() => setDeleteTarget(null)} />
     </Stack>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   Button,
@@ -14,24 +14,25 @@ import { useCreateAssetMutation, useUpdateAssetMutation } from '../store/assetsA
 import { assetInputSchema, type AssetFormFieldErrors } from '../schemas/assetSchema';
 import { assetStatuses, assetTypes, type Asset, type AssetInput } from '../types';
 import ValidatedTextField from './ValidatedTextField';
+import LocationPickerMap, { type LatLng } from './LocationPickerMap';
 
 type FormValues = {
   name: string;
   type: Asset['type'];
   status: Asset['status'];
-  lat: string;
-  lng: string;
+  location: LatLng | null;
   installedAt: string;
   lastInspectedAt: string;
   notes: string;
 };
 
+type TextFieldKey = 'name' | 'installedAt' | 'lastInspectedAt' | 'notes';
+
 const emptyValues: FormValues = {
   name: '',
   type: 'sensor',
   status: 'ok',
-  lat: '',
-  lng: '',
+  location: null,
   installedAt: '',
   lastInspectedAt: '',
   notes: '',
@@ -41,8 +42,7 @@ const toFormValues = (asset: Asset): FormValues => ({
   name: asset.name,
   type: asset.type,
   status: asset.status,
-  lat: String(asset.lat),
-  lng: String(asset.lng),
+  location: { lat: asset.lat, lng: asset.lng },
   installedAt: asset.installedAt,
   lastInspectedAt: asset.lastInspectedAt ?? '',
   notes: asset.notes,
@@ -52,8 +52,8 @@ const toAssetInput = (values: FormValues): AssetInput => ({
   name: values.name.trim(),
   type: values.type,
   status: values.status,
-  lat: values.lat.trim() === '' ? NaN : Number(values.lat),
-  lng: values.lng.trim() === '' ? NaN : Number(values.lng),
+  lat: values.location ? values.location.lat : NaN,
+  lng: values.location ? values.location.lng : NaN,
   installedAt: values.installedAt,
   lastInspectedAt: values.lastInspectedAt || null,
   notes: values.notes,
@@ -70,34 +70,31 @@ const getFieldErrors = (values: FormValues): AssetFormFieldErrors => {
   ) as AssetFormFieldErrors;
 };
 
-export type AssetFormDialogProps = {
-  open: boolean;
+type AssetFormContentProps = {
   onClose: () => void;
   asset?: Asset;
 };
 
-const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
-  const [values, setValues] = useState<FormValues>(emptyValues);
+const AssetFormContent = ({ onClose, asset }: AssetFormContentProps) => {
+  const [values, setValues] = useState<FormValues>(() =>
+    asset ? toFormValues(asset) : emptyValues,
+  );
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [createAsset, createState] = useCreateAssetMutation();
   const [updateAsset, updateState] = useUpdateAssetMutation();
-
-  useEffect(() => {
-    if (open) {
-      setValues(asset ? toFormValues(asset) : emptyValues);
-      setHasAttemptedSubmit(false);
-    }
-  }, [open, asset]);
 
   const isSaving = createState.isLoading || updateState.isLoading;
   const error = createState.error ?? updateState.error;
   const fieldErrors = getFieldErrors(values);
   const isValid = Object.keys(fieldErrors).length === 0;
 
-  const handleChange =
-    (field: keyof FormValues) => (event: React.ChangeEvent<HTMLInputElement>) => {
-      setValues((prev) => ({ ...prev, [field]: event.target.value }));
-    };
+  const handleChange = (field: TextFieldKey) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    setValues((prev) => ({ ...prev, [field]: event.target.value }));
+  };
+
+  const handleLocationChange = (location: LatLng) => {
+    setValues((prev) => ({ ...prev, location }));
+  };
 
   const handleSubmit = async () => {
     setHasAttemptedSubmit(true);
@@ -113,7 +110,7 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <>
       <DialogTitle>{asset ? 'Edit asset' : 'New asset'}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
@@ -132,7 +129,9 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
               select
               label="Type"
               value={values.type}
-              onChange={handleChange('type')}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, type: event.target.value as Asset['type'] }))
+              }
               fullWidth
             >
               {assetTypes.map((type) => (
@@ -145,7 +144,9 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
               select
               label="Status"
               value={values.status}
-              onChange={handleChange('status')}
+              onChange={(event) =>
+                setValues((prev) => ({ ...prev, status: event.target.value as Asset['status'] }))
+              }
               fullWidth
             >
               {assetStatuses.map((status) => (
@@ -155,30 +156,14 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
               ))}
             </TextField>
           </Stack>
-          <Stack direction="row" spacing={2}>
-            <ValidatedTextField
-              label="Latitude"
-              type="number"
-              value={values.lat}
-              onChange={handleChange('lat')}
-              required
-              fullWidth
-              fieldError={fieldErrors.lat}
-              hasAttemptedSubmit={hasAttemptedSubmit}
-              slotProps={{ htmlInput: { min: -90, max: 90, step: 'any' } }}
-            />
-            <ValidatedTextField
-              label="Longitude"
-              type="number"
-              value={values.lng}
-              onChange={handleChange('lng')}
-              required
-              fullWidth
-              fieldError={fieldErrors.lng}
-              hasAttemptedSubmit={hasAttemptedSubmit}
-              slotProps={{ htmlInput: { min: -180, max: 180, step: 'any' } }}
-            />
-          </Stack>
+          <LocationPickerMap
+            value={values.location}
+            mode={asset ? 'edit' : 'create'}
+            onChange={handleLocationChange}
+          />
+          {hasAttemptedSubmit && (fieldErrors.lat || fieldErrors.lng) && (
+            <Alert severity="error">Select a location on the map.</Alert>
+          )}
           <Stack direction="row" spacing={2}>
             <ValidatedTextField
               label="Installed at"
@@ -222,8 +207,20 @@ const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => {
           Save
         </Button>
       </DialogActions>
-    </Dialog>
+    </>
   );
 };
+
+export type AssetFormDialogProps = {
+  open: boolean;
+  onClose: () => void;
+  asset?: Asset;
+};
+
+const AssetFormDialog = ({ open, onClose, asset }: AssetFormDialogProps) => (
+  <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <AssetFormContent key={`${open}-${asset?.id ?? 'new'}`} asset={asset} onClose={onClose} />
+  </Dialog>
+);
 
 export default AssetFormDialog;
