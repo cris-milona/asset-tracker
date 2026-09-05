@@ -16,7 +16,7 @@ export type ListAssetsParams = {
   bbox?: BoundingBox | null;
 };
 
-const buildListQuery = ({ page, limit, types, statuses, bbox }: ListAssetsParams): string => {
+export const buildListQuery = ({ page, limit, types, statuses, bbox }: ListAssetsParams): string => {
   //URLSearchParams is a built-in browser/Node API specifically for building query strings correctly (handling things like encoding special characters) rather than manually concatenating strings like `page=${page}&limit=${limit}` yourself.
   const params = new URLSearchParams({
     page: String(page),
