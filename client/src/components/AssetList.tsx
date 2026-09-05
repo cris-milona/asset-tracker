@@ -12,6 +12,7 @@ import {
   Pagination,
   Select,
   Stack,
+  Box,
   Table,
   TableBody,
   TableCell,
@@ -99,41 +100,43 @@ const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset }: AssetListProps) =
       {data && data.data.length === 0 && <Alert severity="info">No assets found.</Alert>}
 
       {data && data.data.length > 0 && (
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Installed</TableCell>
-              <TableCell align="right">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.data.map((asset) => (
-              <TableRow key={asset.id} hover>
-                <TableCell>{asset.name}</TableCell>
-                <TableCell>{asset.type}</TableCell>
-                <TableCell>
-                  <Chip label={asset.status} color={statusColor[asset.status]} size="small" />
-                </TableCell>
-                <TableCell>{asset.installedAt}</TableCell>
-                <TableCell align="right">
-                  <IconButton aria-label="edit" size="small" onClick={() => onEditAsset(asset)}>
-                    <EditIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton
-                    aria-label="delete"
-                    size="small"
-                    onClick={() => onDeleteAsset(asset)}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </TableCell>
+        <Box sx={{ maxHeight: 440, overflowY: 'auto' }}>
+          <Table size="small" stickyHeader>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell>Installed</TableCell>
+                <TableCell align="right">Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHead>
+            <TableBody>
+              {data.data.map((asset) => (
+                <TableRow key={asset.id} hover>
+                  <TableCell>{asset.name}</TableCell>
+                  <TableCell>{asset.type}</TableCell>
+                  <TableCell>
+                    <Chip label={asset.status} color={statusColor[asset.status]} size="small" />
+                  </TableCell>
+                  <TableCell>{asset.installedAt}</TableCell>
+                  <TableCell align="right">
+                    <IconButton aria-label="edit" size="small" onClick={() => onEditAsset(asset)}>
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton
+                      aria-label="delete"
+                      size="small"
+                      onClick={() => onDeleteAsset(asset)}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Box>
       )}
 
       {data && data.data.length > 0 && (
