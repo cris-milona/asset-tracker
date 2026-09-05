@@ -11,7 +11,7 @@ import {
 } from '../services/assetStore.js';
 import { assetStatuses, assetTypes } from '../types.js';
 
-const assetInputSchema = z.object({
+export const assetInputSchema = z.object({
   name: z.string().trim().min(1),
   type: z.enum(['sensor', 'pipe', 'valve', 'hydrant']),
   status: z.enum(['ok', 'warning', 'critical']),
@@ -40,14 +40,14 @@ const bboxSchema = z
     'bbox must be minLng,minLat,maxLng,maxLat with min <= max',
   );
 
-const listQuerySchema = paginationSchema.extend({
+export const listQuerySchema = paginationSchema.extend({
   types: z.array(z.enum(assetTypes)).optional(),
   statuses: z.array(z.enum(assetStatuses)).optional(),
   bbox: bboxSchema.optional(),
 });
 
 //turns a query parameter into an array of strings, or undefined if that parameter wasn't provided at all
-const parseQueryValues = (value: unknown): string[] | undefined => {
+export const parseQueryValues = (value: unknown): string[] | undefined => {
   if (value === undefined) return undefined;
   const values = Array.isArray(value) ? value : [value];
   return values.flatMap((item) => String(item).split(',')).filter(Boolean);
