@@ -64,7 +64,7 @@ describe('listAssets', () => {
     expect(values).toEqual([['sensor', 'valve'], ['critical'], 10, 0]);
   });
 
-  it('builds a bbox filter as lng/lat BETWEEN with minLng,maxLng,minLat,maxLat param order', async () => {
+  it('builds a bbox filter as ST_Intersects/ST_MakeEnvelope with minLng,minLat,maxLng,maxLat param order', async () => {
     query.mockResolvedValueOnce({ rows: [{ count: '0' }] } as never);
     query.mockResolvedValueOnce({ rows: [] } as never);
 
@@ -75,8 +75,8 @@ describe('listAssets', () => {
     });
 
     const [sql, values] = query.mock.calls[1];
-    expect(sql).toContain('lng BETWEEN $1 AND $2 AND lat BETWEEN $3 AND $4');
-    expect(values).toEqual([-71.2, -70.9, 42.2, 42.5, 40, 0]);
+    expect(sql).toContain('ST_Intersects(geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))');
+    expect(values).toEqual([-71.2, 42.2, -70.9, 42.5, 40, 0]);
   });
 
   it('keeps correct param indices when combining type/status filters with bbox', async () => {
@@ -92,8 +92,8 @@ describe('listAssets', () => {
 
     const [sql, values] = query.mock.calls[1];
     expect(sql).toContain('type = ANY($1::text[])');
-    expect(sql).toContain('lng BETWEEN $2 AND $3 AND lat BETWEEN $4 AND $5');
-    expect(values).toEqual([['hydrant'], -71.2, -70.9, 42.2, 42.5, 10, 10]);
+    expect(sql).toContain('ST_Intersects(geom, ST_MakeEnvelope($2, $3, $4, $5, 4326))');
+    expect(values).toEqual([['hydrant'], -71.2, 42.2, -70.9, 42.5, 10, 10]);
   });
 
   it('maps rows to Asset objects and returns the total count', async () => {
@@ -154,8 +154,8 @@ describe('createAsset', () => {
       'Hydrant H-0001',
       'hydrant',
       'ok',
-      42.372111,
       -71.072095,
+      42.372111,
       '1997-01-20',
       '2010-01-13',
       '',
@@ -174,6 +174,26 @@ describe('updateAsset', () => {
     expect(sql).toContain('name = $1');
     expect(sql).toContain('status = $2');
     expect(values).toEqual(['Renamed', 'warning', '1']);
+  });
+
+  it('builds a full geom point when both lat and lng are given', async () => {
+    query.mockResolvedValueOnce({ rows: [row] } as never);
+
+    await updateAsset('1', { lat: 42.5, lng: -71.0 });
+
+    const [sql, values] = query.mock.calls[0];
+    expect(sql).toContain('geom = ST_SetSRID(ST_MakePoint($1, $2), 4326)');
+    expect(values).toEqual([-71.0, 42.5, '1']);
+  });
+
+  it('falls back to the existing coordinate when only one of lat/lng is given', async () => {
+    query.mockResolvedValueOnce({ rows: [row] } as never);
+
+    await updateAsset('1', { lat: 42.5 });
+
+    const [sql, values] = query.mock.calls[0];
+    expect(sql).toContain('geom = ST_SetSRID(ST_MakePoint(ST_X(geom), $1), 4326)');
+    expect(values).toEqual([42.5, '1']);
   });
 
   it('skips the UPDATE entirely and just re-fetches when given no fields', async () => {

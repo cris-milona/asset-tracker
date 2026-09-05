@@ -32,7 +32,7 @@ const toAsset = (row: AssetRow): Asset => ({
 });
 
 const assetColumns = `
-  id, name, type, status, lat, lng,
+  id, name, type, status, ST_Y(geom) AS lat, ST_X(geom) AS lng,
   installed_at, last_inspected_at, notes
 `;
 
@@ -61,13 +61,13 @@ export const listAssets = async ({
   }
 
   if (bbox) {
-    values.push(bbox.minLng, bbox.maxLng, bbox.minLat, bbox.maxLat);
-    const [minLngParam, maxLngParam, minLatParam, maxLatParam] = [3, 2, 1, 0].map(
+    values.push(bbox.minLng, bbox.minLat, bbox.maxLng, bbox.maxLat);
+    const [minLngParam, minLatParam, maxLngParam, maxLatParam] = [3, 2, 1, 0].map(
       (offset) => `$${values.length - offset}`,
     );
     //search from the db the points that exist inside the rectangle
     conditions.push(
-      `lng BETWEEN ${minLngParam} AND ${maxLngParam} AND lat BETWEEN ${minLatParam} AND ${maxLatParam}`,
+      `ST_Intersects(geom, ST_MakeEnvelope(${minLngParam}, ${minLatParam}, ${maxLngParam}, ${maxLatParam}, 4326))`,
     );
   }
 
@@ -108,9 +108,9 @@ export const createAsset = async (id: string, input: AssetInput): Promise<Asset>
   const result = await pool.query<AssetRow>(
     `
       INSERT INTO assets (
-        id, name, type, status, lat, lng, installed_at, last_inspected_at, notes
+        id, name, type, status, geom, installed_at, last_inspected_at, notes
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326), $7, $8, $9)
       RETURNING ${assetColumns}
     `,
     [
@@ -118,8 +118,8 @@ export const createAsset = async (id: string, input: AssetInput): Promise<Asset>
       input.name,
       input.type,
       input.status,
-      input.lat,
       input.lng,
+      input.lat,
       input.installedAt,
       input.lastInspectedAt,
       input.notes,
@@ -129,12 +129,10 @@ export const createAsset = async (id: string, input: AssetInput): Promise<Asset>
   return toAsset(result.rows[0]);
 };
 
-const updateColumns: Record<keyof AssetInput, string> = {
+const updateColumns: Record<Exclude<keyof AssetInput, 'lat' | 'lng'>, string> = {
   name: 'name',
   type: 'type',
   status: 'status',
-  lat: 'lat',
-  lng: 'lng',
   installedAt: 'installed_at',
   lastInspectedAt: 'last_inspected_at',
   notes: 'notes',
@@ -145,15 +143,27 @@ export const updateAsset = async (
   input: Partial<AssetInput>,
 ): Promise<Asset | null> => {
   const fields = (Object.entries(input) as Array<[keyof AssetInput, unknown]>)
-    .filter(([, value]) => value !== undefined)
+    .filter(
+      (entry): entry is [Exclude<keyof AssetInput, 'lat' | 'lng'>, unknown] =>
+        entry[1] !== undefined && entry[0] !== 'lat' && entry[0] !== 'lng',
+    )
     .map(([key, value]): [string, unknown] => [updateColumns[key], value]);
 
-  if (!fields.length) {
+  if (!fields.length && input.lat === undefined && input.lng === undefined) {
     return getAsset(id);
   }
 
   const values = fields.map(([, value]) => value);
   const assignments = fields.map(([column], index) => `${column} = $${index + 1}`);
+
+  if (input.lat !== undefined || input.lng !== undefined) {
+    const lngExpr = input.lng !== undefined ? `$${values.length + 1}` : 'ST_X(geom)';
+    if (input.lng !== undefined) values.push(input.lng);
+    const latExpr = input.lat !== undefined ? `$${values.length + 1}` : 'ST_Y(geom)';
+    if (input.lat !== undefined) values.push(input.lat);
+    assignments.push(`geom = ST_SetSRID(ST_MakePoint(${lngExpr}, ${latExpr}), 4326)`);
+  }
+
   values.push(id);
 
   const result = await pool.query<AssetRow>(

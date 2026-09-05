@@ -4,13 +4,21 @@ A small full-stack app for tracking physical assets (pipes, hydrants, sensors, v
 map: list + filter by type/status, view on an interactive map with a geospatial filter, and
 create/edit/delete assets with a click-to-place location picker.
 
-- **Backend**: Node.js / Express / TypeScript, PostgreSQL (plain SQL), Zod validation
+- **Backend**: Node.js / Express / TypeScript, PostgreSQL + PostGIS (plain SQL), Zod validation
 - **Frontend**: React / TypeScript / MUI, Redux Toolkit + RTK Query, react-leaflet (Leaflet + OpenStreetMap)
+
+This is the `postgis-geometry` branch — a variant of the main branch that stores asset
+locations as a PostGIS `geometry(Point, 4326)` column and filters by bounding box with
+`ST_Intersects`, instead of plain `lat`/`lng` columns and a `BETWEEN` query. See
+[IMPLEMENTATION_PLAN.postgis.md](IMPLEMENTATION_PLAN.postgis.md) for the rationale and
+what differs from `main`.
 
 ## Prerequisites
 
 - Node.js (version pinned in `.nvmrc`; `nvm use` if you have nvm)
-- A local PostgreSQL server running (no PostGIS, no Docker required — plain PostgreSQL is enough)
+- A local PostgreSQL server running with the PostGIS extension available (schema.sql runs
+  `CREATE EXTENSION IF NOT EXISTS postgis;`, which requires it to be installed, e.g. via
+  `postgresql-<version>-postgis-3` on Linux or the Postgres.app / Homebrew `postgis` formula on macOS)
 
 ## Setup
 

@@ -29,15 +29,14 @@ export const seed = async (): Promise<void> => {
       await client.query(
         `
           INSERT INTO assets (
-            id, name, type, status, lat, lng, installed_at, last_inspected_at, notes
+            id, name, type, status, geom, installed_at, last_inspected_at, notes
           )
-          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+          VALUES ($1, $2, $3, $4, ST_SetSRID(ST_MakePoint($5, $6), 4326), $7, $8, $9)
           ON CONFLICT (id) DO UPDATE SET
             name = EXCLUDED.name,
             type = EXCLUDED.type,
             status = EXCLUDED.status,
-            lat = EXCLUDED.lat,
-            lng = EXCLUDED.lng,
+            geom = EXCLUDED.geom,
             installed_at = EXCLUDED.installed_at,
             last_inspected_at = EXCLUDED.last_inspected_at,
             notes = EXCLUDED.notes
@@ -47,8 +46,8 @@ export const seed = async (): Promise<void> => {
           asset.name,
           asset.type,
           asset.status,
-          asset.lat,
           asset.lng,
+          asset.lat,
           asset.installed_at,
           asset.last_inspected_at,
           asset.notes,
