@@ -80,4 +80,4 @@ All endpoints are under `/api/assets`.
 
 ## Out of scope
 
-Per the assignment brief: authentication/authorization, mobile responsiveness, deployment (local-run only), exhaustive test coverage, accessibility audits, and production observability beyond basic logs.
+authentication/authorization, mobile responsiveness, deployment (local-run only), accessibility audits, and production observability beyond basic logs.

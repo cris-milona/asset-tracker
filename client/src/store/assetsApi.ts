@@ -34,6 +34,7 @@ export const buildListQuery = ({
   }
   return params.toString();
 };
+
 export const assetsApi = createApi({
   reducerPath: 'assetsApi',
   baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_URL }),
@@ -59,6 +60,7 @@ export const assetsApi = createApi({
     }),
   }),
 });
+
 export const {
   useListAssetsQuery,
   useCreateAssetMutation,

@@ -13,5 +13,5 @@
 - New code follows the strict TypeScript settings already configured — no `any`, no suppressing type errors without discussing why first.
 - Flag any place where you're making a judgment call not explicitly covered by IMPLEMENTATION_PLAN.md, and explain the reasoning.
 - Never commit `.env` or real credentials — only `.env.example` with placeholders.
-- Modify IMPLEMENTATION_PLAN.md's after finishing the task and taking approval for it.
+- Modify IMPLEMENTATION_PLAN.md after finishing the task and taking approval for it.
 - Do not check off items from the checklist in IMPLEMENTATION_PLAN.md

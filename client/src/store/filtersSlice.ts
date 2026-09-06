@@ -12,6 +12,7 @@ const initialState: FiltersState = {
   statuses: [],
   mapBounds: null,
 };
+
 const filtersSlice = createSlice({
   name: 'filters',
   initialState,
@@ -27,5 +28,6 @@ const filtersSlice = createSlice({
     },
   },
 });
+
 export const { typesChanged, statusesChanged, mapBoundsChanged } = filtersSlice.actions;
 export const filtersReducer = filtersSlice.reducer;

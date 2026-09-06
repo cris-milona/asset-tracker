@@ -11,8 +11,7 @@ import {
 } from '../services/assetStore.js';
 import { assetStatuses, assetTypes } from '../types.js';
 
-// Mirrors client/src/schemas/assetSchema.ts (not shared across the client/server
-// boundary — keep the two in sync by hand when changing either).
+// Mirrors client/src/schemas/assetSchema.ts (not shared across the client/server keep the two in sync by hand when changing either).
 export const assetInputSchema = z.object({
   name: z.string().trim().min(1),
   type: z.enum(['sensor', 'pipe', 'valve', 'hydrant']),
