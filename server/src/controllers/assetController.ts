@@ -11,6 +11,8 @@ import {
 } from '../services/assetStore.js';
 import { assetStatuses, assetTypes } from '../types.js';
 
+// Mirrors client/src/schemas/assetSchema.ts (not shared across the client/server
+// boundary — keep the two in sync by hand when changing either).
 export const assetInputSchema = z.object({
   name: z.string().trim().min(1),
   type: z.enum(['sensor', 'pipe', 'valve', 'hydrant']),
@@ -21,6 +23,12 @@ export const assetInputSchema = z.object({
   lastInspectedAt: z.string().date().nullable(),
   notes: z.string(),
 });
+
+export const updateAssetBodySchema = assetInputSchema
+  .partial()
+  .refine((input) => Object.keys(input).length > 0, {
+    message: 'At least one field must be provided',
+  });
 
 const idSchema = z.string().uuid();
 
@@ -93,7 +101,7 @@ export const createAssetHandler: RequestHandler = asyncHandler(async (request, r
 });
 
 export const updateAssetHandler: RequestHandler = asyncHandler(async (request, response) => {
-  const input = assetInputSchema.partial().parse(request.body);
+  const input = updateAssetBodySchema.parse(request.body);
   const asset = await updateAsset(idSchema.parse(request.params.id), input);
   if (!asset) throw new HttpError(404, 'Asset not found', 'NOT_FOUND');
   response.json({ data: asset });

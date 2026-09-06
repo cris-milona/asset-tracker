@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { assetInputSchema, listQuerySchema, parseQueryValues } from '../assetController.js';
+import {
+  assetInputSchema,
+  listQuerySchema,
+  parseQueryValues,
+  updateAssetBodySchema,
+} from '../assetController.js';
 
 describe('parseQueryValues', () => {
   it('returns undefined when the query param is absent', () => {
@@ -75,5 +80,15 @@ describe('assetInputSchema', () => {
   it('rejects an unknown asset type', () => {
     const result = assetInputSchema.safeParse({ ...valid, type: 'pump' });
     expect(result.success).toBe(false);
+  });
+});
+
+describe('updateAssetBodySchema', () => {
+  it('accepts a partial body with at least one field', () => {
+    expect(updateAssetBodySchema.safeParse({ name: 'Renamed' }).success).toBe(true);
+  });
+
+  it('rejects an empty body', () => {
+    expect(updateAssetBodySchema.safeParse({}).success).toBe(false);
   });
 });
