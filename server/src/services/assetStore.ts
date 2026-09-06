@@ -51,7 +51,6 @@ export const listAssets = async ({
   const conditions: string[] = [];
   // Returns the placeholder for a value at the moment it's added, so a condition's
   // params can never drift out of sync with its $N numbering.
-  //mine: usually in a real app this is solved with outside libraries like pg-promise or Kysely, Knex
   const addParam = (value: number | string[]) => {
     values.push(value);
     return `$${values.length}`;
