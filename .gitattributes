@@ -1,3 +1,5 @@
 *.ts filter=stripnotes
 *.tsx filter=stripnotes
+*.js filter=stripnotes
+*.jsx filter=stripnotes
 *.sql filter=stripnotes
