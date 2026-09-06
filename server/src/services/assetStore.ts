@@ -49,8 +49,6 @@ export const listAssets = async ({
 }): Promise<{ assets: Asset[]; total: number }> => {
   const values: Array<number | string[]> = [];
   const conditions: string[] = [];
-  // Returns the placeholder for a value at the moment it's added, so a condition's
-  // params can never drift out of sync with its $N numbering.
   const addParam = (value: number | string[]) => {
     values.push(value);
     return `$${values.length}`;
@@ -92,7 +90,6 @@ export const listAssets = async ({
     `,
     dataValues,
   );
-  //Without a defined sort order, Postgres doesn't guarantee it'll return rows in the same order every time you query — which would mean page 1 and page 2 could occasionally show overlapping or missing assets between requests.
   return {
     assets: result.rows.map(toAsset),
     total: Number(countResult.rows[0]?.count ?? 0),
