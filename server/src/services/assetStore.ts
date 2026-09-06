@@ -49,23 +49,27 @@ export const listAssets = async ({
 }): Promise<{ assets: Asset[]; total: number }> => {
   const values: Array<number | string[]> = [];
   const conditions: string[] = [];
+  // Returns the placeholder for a value at the moment it's added, so a condition's
+  // params can never drift out of sync with its $N numbering.
+  //mine: usually in a real app this is solved with outside libraries like pg-promise or Kysely, Knex
+  const addParam = (value: number | string[]) => {
+    values.push(value);
+    return `$${values.length}`;
+  };
 
   if (types?.length) {
-    values.push(types);
-    conditions.push(`type = ANY($${values.length}::text[])`);
+    conditions.push(`type = ANY(${addParam(types)}::text[])`);
   }
 
   if (statuses?.length) {
-    values.push(statuses);
-    conditions.push(`status = ANY($${values.length}::text[])`);
+    conditions.push(`status = ANY(${addParam(statuses)}::text[])`);
   }
 
   if (bbox) {
-    values.push(bbox.minLng, bbox.maxLng, bbox.minLat, bbox.maxLat);
-    const [minLngParam, maxLngParam, minLatParam, maxLatParam] = [3, 2, 1, 0].map(
-      (offset) => `$${values.length - offset}`,
-    );
-    //search from the db the points that exist inside the rectangle
+    const minLngParam = addParam(bbox.minLng);
+    const maxLngParam = addParam(bbox.maxLng);
+    const minLatParam = addParam(bbox.minLat);
+    const maxLatParam = addParam(bbox.maxLat);
     conditions.push(
       `lng BETWEEN ${minLngParam} AND ${maxLngParam} AND lat BETWEEN ${minLatParam} AND ${maxLatParam}`,
     );
