@@ -1,0 +1,3 @@
+*.ts filter=stripnotes
+*.tsx filter=stripnotes
+*.sql filter=stripnotes
