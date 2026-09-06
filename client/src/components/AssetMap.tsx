@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Alert, Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import type { Asset } from '../types';
 import { statusHexColor } from '../statusColor';
@@ -10,7 +10,6 @@ import { ASSET_PANEL_HEIGHT, ASSET_PANEL_MIN_HEIGHT } from '../layout';
 
 export type AssetMapProps = {
   assets: Asset[];
-  totalInView: number;
   onEditAsset: (asset: Asset) => void;
   onDeleteAsset: (asset: Asset) => void;
 };
@@ -42,13 +41,8 @@ const BoundsReporter = () => {
   return null;
 };
 
-const AssetMap = ({ assets, totalInView, onEditAsset, onDeleteAsset }: AssetMapProps) => (
+const AssetMap = ({ assets, onEditAsset, onDeleteAsset }: AssetMapProps) => (
   <Box>
-    {assets.length < totalInView && (
-      <Alert severity="warning" sx={{ mb: 1 }}>
-        Showing {assets.length} of {totalInView} assets in this area — zoom in to see the rest.
-      </Alert>
-    )}
     <Box
       sx={{
         height: ASSET_PANEL_HEIGHT,

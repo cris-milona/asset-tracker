@@ -53,7 +53,6 @@ const AssetsPage = () => {
         <Stack sx={{ flex: 1, minWidth: 0 }}>
           <AssetMap
             assets={mapData?.data ?? []}
-            totalInView={mapData?.total ?? 0}
             onEditAsset={openEditForm}
             onDeleteAsset={setDeleteTarget}
           />
