@@ -32,24 +32,47 @@ export const toFormValues = (asset: Asset): FormValues => ({
   notes: asset.notes,
 });
 
-export const toAssetInput = (values: FormValues): AssetInput => ({
-  name: values.name.trim(),
-  type: values.type,
-  status: values.status,
-  lat: values.location ? values.location.lat : NaN,
-  lng: values.location ? values.location.lng : NaN,
-  installedAt: values.installedAt,
-  lastInspectedAt: values.lastInspectedAt || null,
-  notes: values.notes,
-});
+// Only call once a location has been confirmed picked (see getFieldErrors) — callers that skip that check get a thrown error instead of a silent NaN lat/lng.
+export const toAssetInput = (values: FormValues): AssetInput => {
+  if (!values.location) {
+    throw new Error('toAssetInput called without a selected location');
+  }
+  return {
+    name: values.name.trim(),
+    type: values.type,
+    status: values.status,
+    lat: values.location.lat,
+    lng: values.location.lng,
+    installedAt: values.installedAt,
+    lastInspectedAt: values.lastInspectedAt || null,
+    notes: values.notes,
+  };
+};
+
+const nonLocationSchema = assetInputSchema.omit({ lat: true, lng: true });
 
 export const getFieldErrors = (values: FormValues): AssetFormFieldErrors => {
-  const result = assetInputSchema.safeParse(toAssetInput(values));
-  if (result.success) return {};
-  const fieldErrors = result.error.flatten().fieldErrors;
-  return Object.fromEntries(
-    Object.entries(fieldErrors)
-      .filter(([, messages]) => messages && messages.length > 0)
-      .map(([field, messages]) => [field, messages![0]]),
-  ) as AssetFormFieldErrors;
+  const result = nonLocationSchema.safeParse({
+    name: values.name.trim(),
+    type: values.type,
+    status: values.status,
+    installedAt: values.installedAt,
+    lastInspectedAt: values.lastInspectedAt || null,
+    notes: values.notes,
+  });
+
+  const fieldErrors: AssetFormFieldErrors = result.success
+    ? {}
+    : (Object.fromEntries(
+        Object.entries(result.error.flatten().fieldErrors)
+          .filter(([, messages]) => messages && messages.length > 0)
+          .map(([field, messages]) => [field, messages![0]]),
+      ) as AssetFormFieldErrors);
+
+  if (!values.location) {
+    fieldErrors.lat = 'Select a location on the map';
+    fieldErrors.lng = 'Select a location on the map';
+  }
+
+  return fieldErrors;
 };
