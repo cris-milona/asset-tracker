@@ -17,38 +17,20 @@ Backend (bulletproof-nodejs inspired) and frontend (bulletproof-react inspired) 
 ```
 server/src/
   middleware/
-    errorHandler.ts
-  test-utils/
-    express.ts
   db/
-    pool.ts
-    schema.sql
-    seed.ts
   controllers/
-    assetController.ts
-    __tests__/assetController.test.ts
   routes/
-    assetRoutes.ts
   services/
-    assetStore.ts          # SQL queries incl. the bbox filter
-    __tests__/assetStore.test.ts
   types.ts
   app.ts
   server.ts
 
 client/src/
   store/
-    assetsApi.ts            # RTK Query
-    filtersSlice.ts         # type/status filters, map bounds
-    store.ts
-    hooks.ts
   components/
-    AssetList.tsx
-    AssetMap.tsx
-    AssetForm.tsx
-    AssetDetail.tsx
   pages/
-    AssetsPage.tsx           # composes list + map + filters
+  schemas/
+  utils/
   types.ts
   App.tsx
   main.tsx
@@ -109,8 +91,8 @@ Tests + README + polish — a small set of meaningful tests (bbox query correctn
 - [x] Map-based location picker for create/edit
 - [x] Bounding-box geospatial filter based on the map viewport
 - [x] Seed database from seed.json on startup
-- [ ] Meaningful tests
-- [ ] README with setup/running instructions and architecture/technical decisions
+- [x] Meaningful tests
+- [x] README with setup/running instructions and architecture/technical decisions
 
 **Out of scope**
 Authentication, mobile responsiveness, deployment, exhaustive test coverage, accessibility audits, production observability beyond basic logs.

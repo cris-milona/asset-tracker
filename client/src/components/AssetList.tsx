@@ -26,6 +26,7 @@ import { useListAssetsQuery } from '../store/assetsApi';
 import { assetStatuses, assetTypes, type Asset, type AssetStatus, type AssetType } from '../types';
 import MultiSelectFilter, { CLEAR_SELECTION } from './MultiSelectFilter';
 import { statusColor } from '../statusColor';
+import { ASSET_PANEL_HEIGHT, ASSET_PANEL_MIN_HEIGHT } from '../layout';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 40] as const;
 
@@ -99,7 +100,7 @@ const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset }: AssetListProps) =
       {data && data.data.length === 0 && <Alert severity="info">No assets found.</Alert>}
 
       {data && data.data.length > 0 && (
-        <Box sx={{ maxHeight: 440, overflowY: 'auto' }}>
+        <Box sx={{ height: ASSET_PANEL_HEIGHT, minHeight: ASSET_PANEL_MIN_HEIGHT, overflowY: 'auto' }}>
           <Table size="small" stickyHeader>
             <TableHead>
               <TableRow>

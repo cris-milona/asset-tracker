@@ -19,6 +19,7 @@ type AssetRow = {
   last_inspected_at: string | null;
   notes: string;
 };
+
 const toAsset = (row: AssetRow): Asset => ({
   id: row.id,
   name: row.name,
@@ -49,6 +50,7 @@ export const listAssets = async ({
 }): Promise<{ assets: Asset[]; total: number }> => {
   const values: Array<number | string[]> = [];
   const conditions: string[] = [];
+
   const addParam = (value: number | string[]) => {
     values.push(value);
     return `$${values.length}`;
@@ -90,6 +92,7 @@ export const listAssets = async ({
     `,
     dataValues,
   );
+
   return {
     assets: result.rows.map(toAsset),
     total: Number(countResult.rows[0]?.count ?? 0),

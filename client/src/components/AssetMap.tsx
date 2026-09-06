@@ -6,6 +6,7 @@ import { statusHexColor } from '../statusColor';
 import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM } from '../mapDefaults';
 import { useAppDispatch } from '../store/hooks';
 import { mapBoundsChanged } from '../store/filtersSlice';
+import { ASSET_PANEL_HEIGHT, ASSET_PANEL_MIN_HEIGHT } from '../layout';
 
 export type AssetMapProps = {
   assets: Asset[];
@@ -48,7 +49,15 @@ const AssetMap = ({ assets, totalInView, onEditAsset, onDeleteAsset }: AssetMapP
         Showing {assets.length} of {totalInView} assets in this area — zoom in to see the rest.
       </Alert>
     )}
-    <Box sx={{ height: 600, width: '100%', borderRadius: 1, overflow: 'hidden' }}>
+    <Box
+      sx={{
+        height: ASSET_PANEL_HEIGHT,
+        minHeight: ASSET_PANEL_MIN_HEIGHT,
+        width: '100%',
+        borderRadius: 1,
+        overflow: 'hidden',
+      }}
+    >
       <MapContainer
         center={DEFAULT_MAP_CENTER}
         zoom={DEFAULT_MAP_ZOOM}
