@@ -37,7 +37,6 @@ const paginationSchema = z.object({
   limit: z.coerce.number().int().min(1).max(40).default(10),
 });
 
-// ?bbox=minLng,minLat,maxLng,maxLat, matching the current map viewport.
 const bboxSchema = z
   .string()
   .transform((value) => value.split(',').map(Number))
@@ -54,7 +53,6 @@ export const listQuerySchema = paginationSchema.extend({
   bbox: bboxSchema.optional(),
 });
 
-//turns a query parameter into an array of strings, or undefined if that parameter wasn't provided at all
 export const parseQueryValues = (value: unknown): string[] | undefined => {
   if (value === undefined) return undefined;
   const values = Array.isArray(value) ? value : [value];

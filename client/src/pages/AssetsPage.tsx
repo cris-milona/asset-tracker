@@ -8,8 +8,7 @@ import { useAppSelector } from '../store/hooks';
 import { useListAssetsQuery } from '../store/assetsApi';
 import type { Asset } from '../types';
 
-// The API's max page size — a safety cap for how many markers render at once, not a
-// real-world limit: the bbox filter already restricts results to the current viewport.
+// The API's max page size — a safety cap for how many markers render at once, not a real-world limit: the bbox filter already restricts results to the current viewport.
 const MAP_ASSET_LIMIT = 40;
 
 const AssetsPage = () => {

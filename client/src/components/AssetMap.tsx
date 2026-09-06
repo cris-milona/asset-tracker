@@ -9,19 +9,15 @@ import { mapBoundsChanged } from '../store/filtersSlice';
 
 export type AssetMapProps = {
   assets: Asset[];
-  // Count of matching assets within the current map viewport — not the filtered total
-  // across all pages (that's what AssetList's pagination shows).
   totalInView: number;
   onEditAsset: (asset: Asset) => void;
   onDeleteAsset: (asset: Asset) => void;
 };
 
-// Reads the current rectangle of the map so the backend's WHERE clause only returns assets actually visible on the map.
 const BoundsReporter = () => {
   const dispatch = useAppDispatch();
 
   const reportBounds = (map: ReturnType<typeof useMap>) => {
-    //we get the visible area by leaflets
     const bounds = map.getBounds();
     dispatch(
       mapBoundsChanged({
@@ -34,7 +30,6 @@ const BoundsReporter = () => {
   };
 
   const map = useMapEvents({
-    //every time we move something it recalculates the rectangle
     moveend: () => reportBounds(map),
   });
 

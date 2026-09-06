@@ -6,8 +6,7 @@ export const statusColor: Record<AssetStatus, 'success' | 'warning' | 'error'> =
   critical: 'error',
 };
 
-// MUI's palette names ('success'/'warning'/'error') aren't valid CSS colors, so map
-// markers (plain CSS) need their own hex values, matching MUI's default palette.
+// MUI's palette names ('success'/'warning'/'error') aren't valid CSS colors, so map markers (plain CSS) need their own hex values, matching MUI's default palette.
 export const statusHexColor: Record<AssetStatus, string> = {
   ok: '#2e7d32',
   warning: '#ed6c02',

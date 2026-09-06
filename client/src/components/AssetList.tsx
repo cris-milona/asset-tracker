@@ -38,7 +38,6 @@ export type AssetListProps = {
 const AssetList = ({ onNewAsset, onEditAsset, onDeleteAsset }: AssetListProps) => {
   const dispatch = useAppDispatch();
   const types = useAppSelector((state) => state.filters.types);
-  //useSelector((state) => state.filters.types), React-Redux checks whether the result of that selector changed compared to the last render, to decide whether the component needs to re-render.
   const statuses = useAppSelector((state) => state.filters.statuses);
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState<number>(PAGE_SIZE_OPTIONS[0]);

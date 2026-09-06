@@ -32,7 +32,6 @@ export const toFormValues = (asset: Asset): FormValues => ({
   notes: asset.notes,
 });
 
-// Only call once a location has been confirmed picked (see getFieldErrors) — callers that skip that check get a thrown error instead of a silent NaN lat/lng.
 export const toAssetInput = (values: FormValues): AssetInput => {
   if (!values.location) {
     throw new Error('toAssetInput called without a selected location');
