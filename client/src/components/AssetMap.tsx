@@ -9,7 +9,9 @@ import { mapBoundsChanged } from '../store/filtersSlice';
 
 export type AssetMapProps = {
   assets: Asset[];
-  total: number;
+  // Count of matching assets within the current map viewport — not the filtered total
+  // across all pages (that's what AssetList's pagination shows).
+  totalInView: number;
   onEditAsset: (asset: Asset) => void;
   onDeleteAsset: (asset: Asset) => void;
 };
@@ -44,11 +46,11 @@ const BoundsReporter = () => {
   return null;
 };
 
-const AssetMap = ({ assets, total, onEditAsset, onDeleteAsset }: AssetMapProps) => (
+const AssetMap = ({ assets, totalInView, onEditAsset, onDeleteAsset }: AssetMapProps) => (
   <Box>
-    {assets.length < total && (
+    {assets.length < totalInView && (
       <Alert severity="warning" sx={{ mb: 1 }}>
-        Showing {assets.length} of {total} assets in this area — zoom in to see the rest.
+        Showing {assets.length} of {totalInView} assets in this area — zoom in to see the rest.
       </Alert>
     )}
     <Box sx={{ height: 600, width: '100%', borderRadius: 1, overflow: 'hidden' }}>

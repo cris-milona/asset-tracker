@@ -38,10 +38,8 @@ describe('toAssetInput', () => {
     expect(input.name).toBe('Hydrant H-0001');
   });
 
-  it('uses NaN for lat/lng when no location has been picked', () => {
-    const input = toAssetInput({ ...emptyValues, name: 'New asset' });
-    expect(input.lat).toBeNaN();
-    expect(input.lng).toBeNaN();
+  it('throws when no location has been picked', () => {
+    expect(() => toAssetInput({ ...emptyValues, name: 'New asset' })).toThrow();
   });
 
   it('converts an empty lastInspectedAt back to null', () => {
